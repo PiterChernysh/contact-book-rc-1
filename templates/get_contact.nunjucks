@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>User profile</title>
+</head>
+<body>
+<div id="mydiv">
+    <p><a href="/api/auth">User Authorization</a></p>
+    <p><a href="/api/contacts/all">Get all contact by user</a></p>
+    <p>Welcome to Contact profile</p>
+    <p id="regist"></p>
+    <div id="content"></div>
+   
+</div>
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+</script>
+<script>
+const data = {{ myData | dump | safe }};
+let div = document.createElement('div');
+div.className = 'row';
+let sum = "";
+delete data.__v;
+delete data.createdAt;
+delete data.updatedAt;
+for (let name in data) {
+    let str = name + " : " + data[name];
+    sum += `<p>${str}</p>`;
+}
+sum += ` <p><a href="/api/contacts/update/${data._id}">Update contact profile</a></p>`;
+div.innerHTML = sum;
+document.getElementById('content').appendChild(div);
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>all user contacts</title>
+    </head>
+    <body>
+        <div id="mydiv">
+         <form id="login">
+            <p>
+                <a href="/api/auth">User Authorization</a>
+            </p>
+            <p>Welcome to all user contacts</p>
+            <p id="regist"></p>
+            <div id="content"></div>
+            <p>
+                <a href="/api/user/update">Update User profile</a>
+            </p>
+        </div>
+        </form>
+        <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+        <script>
+            $.ajax({method: "POST", url: "/api/contacts/all"})
+                .then(function (msg) {
+                    let div = document.createElement('div');
+                    div.className = 'row';
+                    let sum = "";
+                    msg.data.map(function(file){
+                        for (let name in file) {
+                            if(name != "_id"&&name !== "addedBy"&&name !="createdAt"&&name !== "updatedAt"&&name !== "__v"){
+                            let str = name + " : " + file[name];
+                            sum += `<p>${str}</p>`;}
+                        }
+                        sum += `<a href='javascript: document.location.href = "/api/contacts/get/${file["_id"]}";'>check in</a>`;
+                        sum += "<p>-------------------------------------</p>";
+                    });
+                    div.innerHTML = sum;
+                    document.getElementById('content').appendChild(div);
+                })
+            .catch((e) => $("#regist").text("User is not authorized"));
+        </script>
+    </body>
+</html>

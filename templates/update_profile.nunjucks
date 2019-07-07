@@ -1,0 +1,92 @@
+
+<html>
+<head>
+    <title>User profile</title>
+</head>
+<body>
+
+<div id="mydiv">
+    <form id="login">
+        <p><a href="/api/auth">User Authorization</a></p>
+        <p>Welcome to User Update  profile</p>
+        <div id="content"></div><br />
+        <p id="regist"></p>
+        <button id = "btn">Update profile</button>
+        
+    </form>
+</div>
+
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+</script>
+<script>
+$.ajax({
+            method: "POST",
+            url: "/api/user/update",
+        })
+            .then(function(data) {
+                let div = document.createElement('div');
+                div.className = 'row';
+                let sum = "";
+                data[1].map(function(name){
+                    let str = name + " : " + data[0][name];
+                    switch (name) {
+                        case "email":
+                            sum += `<p>${str}</p>`;
+                            sum += `<input type="email" id="email" value="${data[0][name]}" />`;
+                            break;
+                        case "password":
+                            sum += `<p>${name}</p>`;
+                            sum += `<input type="password" id="password" value=""/>`;
+                            break;
+                        case "birthday":
+                            let st = [];
+                            if(data[0][name])  st = data[0][name].split('T');
+                            sum += `<p>${name}</p>`;
+                            sum += `<input id="birthday" value="${st[0]}" />`;
+                            break;
+                        default:{
+                                sum += `<p>${str}</p>`;
+                                sum += `<input id="${name}" value="${data[0][name]}"/>`;
+                            }
+                    }
+                });
+                div.innerHTML = sum;
+                document.getElementById('content').appendChild(div);
+            })
+            .catch( (e) => $("#regist").text("User is not authorized") );
+
+function validateEmail(email) {
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+
+$("#login").on('click', '#btn', (e) => {
+        e.preventDefault();
+        const dat = $("#content input");
+        const obj = {};
+        for(let i = 0; i<dat.length; i++){
+            if($(dat[i]).val()!="undefined")
+            if($(dat[i]).val()) obj[$(dat[i]).attr('id')] = $(dat[i]).val();
+        }
+        if(!validateEmail(obj.email)) alert("Login is incorrect")
+        if(!obj.password||obj.password.length<6) alert("Password is incorrect");
+        if(obj.birthday&&!Date.parse(obj.birthday)) alert("Birthday is incorrect");
+        else{
+        $.ajax({
+            method: "PUT",
+            url: "/api/user/update",
+            data: obj
+        })
+            .then(function( msg ) {
+               location.href = "/api/user/profile";
+            })
+            .catch( (e) => $("#regist").text("Username or password is incorrect") );
+        }
+    });    
+ 
+</script>
+</body>
+</html>

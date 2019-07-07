@@ -1,0 +1,120 @@
+
+<html>
+<head>
+    <title>User Contact</title>
+</head>
+<body>
+
+<div id="mydiv">
+    <form id="login">
+        <p><a href="/api/auth">User Authorization</a></p>
+        <p><a href="/api/contacts/all">Get all contacts</a></p>
+        <p>Welcome to create contact</p>
+        <div id="content"></div><br />
+        <p id="regist"></p>
+        <button id = "btn">Create contact</button>
+        
+    </form>
+</div>
+
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous">
+</script>
+<script>
+$.ajax({
+            method: "POST",
+            url: "/api/contacts",
+        })
+            .then(function(data) {
+                let div = document.createElement('div');
+                div.className = 'row';
+                let sum = "";
+                data.map(function(name){
+                    let str = name + " : " + data[name];
+                    switch (name) {
+                        case "email":
+                            sum += `<p>${str}</p>`;
+                            sum += `<input type="email" id="email" />`;
+                            break;
+                        default:{
+                                sum += `<p>${str}</p>`;
+                                sum += `<input id="${name}" />`;
+                            }
+                    }
+                });
+                div.innerHTML = sum;
+                document.getElementById('content').appendChild(div);{#  #}
+            })
+            .catch( (e) => $("#regist").text("User is not authorized") );
+ function validateEmail(email) {
+    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+function isURL(str) {
+  var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+    '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+    '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+    '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+  return !!pattern.test(str);
+}
+function validPhone(phone){
+    const targ=phone.replace(/[^\d]/g,''); // remove all non-digits
+    if(targ && targ.length===10) {
+        return true;
+    }
+    return false;
+}
+
+$("#login").on('click', '#btn', (e) => {
+        e.preventDefault();
+        const dat = $("#content input");
+        const obj = {};
+        for(let i = 0; i<dat.length; i++){
+            if($(dat[i]).val()!="undefined")
+            if($(dat[i]).attr('id') == "social.fb" && $(dat[i]).val()) {
+                obj.social = {}; 
+                obj.social.fb = $(dat[i]).val();
+            }
+            else if($(dat[i]).attr('id') == "social.insta" && $(dat[i]).val()){
+                if(!obj.social) obj.social = {};
+                obj.social.insta = $(dat[i]).val();
+            }
+            else if($(dat[i]).val()) obj[$(dat[i]).attr('id')] = $(dat[i]).val();
+        }
+        if($("#social.fb").val() && !isURL(obj.social.fb)) alert("Social fb is incorrect");
+        if($("#social.insta").val() && !isURL(obj.social.insta)) alert("Social insta is incorrect");
+        if(obj.email && !validateEmail(obj.email)) alert("Login is incorrect");
+        else if(obj.email) {
+            const e = obj.email;
+            obj.email = [];
+            obj.email.push(e);
+        }
+        if($("#phones").val() && !validPhone(obj.phones)) alert("Phones is incorrect");
+        else if(obj.phones) {
+            const p = obj.phones;
+            obj.phones = [];
+            obj.phones.push(p);
+        }
+        if(obj.birthday&&!Date.parse(obj.birthday)) alert("Birthday is incorrect");
+        else if (Object.keys(obj).length == 0) alert("Wrong input, all fields are empty");
+        else{
+            console.log(obj);
+        $.ajax({
+            method: "PUT",
+            url: "/api/contacts",
+            data: obj
+        })
+            .then(function( msg ) {
+               location.href = `/api/contacts/get/${msg.data._id}`;
+            })
+            .catch( (e) => $("#regist").text("Username or password is incorrect") );
+        }
+    });     
+ 
+</script>
+</body>
+</html>
